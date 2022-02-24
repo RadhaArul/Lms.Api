@@ -16,8 +16,11 @@ namespace Lms.Data.Data.MapperProfile
             CreateMap<Course, CourseDto>()
                 .ForMember(
                 dest => dest.EndDate,
-                opt => opt.MapFrom(src => src.StartDate.AddMonths(3)));
-
+                opt => opt.MapFrom(src => src.StartDate.AddMonths(3)))
+                
+                .ForMember(
+                dest=>dest.Modules,
+                opt => opt.MapFrom(src =>src.Modules));
             CreateMap<Module, ModuleDto>()
                 .ForMember(
                 dest => dest.EndDate,

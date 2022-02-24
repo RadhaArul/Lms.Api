@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Lms.Data.Data;
 using Lms.Core.Entities;
 using AutoMapper;
+using Lms.Core.Dto;
+using AutoMapper.QueryableExtensions;
 
 namespace Lms.Api.Controllers
 {
@@ -25,7 +27,9 @@ namespace Lms.Api.Controllers
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
         {
 
-            var courses = _context.Course.Include(c => c.Modules);
+            // var courses = _context.Course.Include(c => c.Modules);
+            
+            var courses = mapper.ProjectTo<CourseDto>(_context.Course);
             return Ok(courses);
         }
 
@@ -33,14 +37,15 @@ namespace Lms.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
-            var course =await _context.Course.Include(c => c.Modules)
-                .FirstOrDefaultAsync(c=>c.Id==id);
+            //var course =await _context.Course.Include(c => c.Modules)
+            //    .FirstOrDefaultAsync(c=>c.Id==id);
+            var course = mapper.ProjectTo<CourseDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
             if (course == null)
             {
                 return NotFound();
             }
 
-            return course;
+            return Ok(course);
         }
 
         // PUT: api/Courses/5
