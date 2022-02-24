@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Lms.Data.Data;
 using Lms.Api.Extensions;
+using Lms.Data.Data.MapperProfile;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddControllers(opt=>opt.ReturnHttpNotAcceptable=true)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
+
+builder.Services.AddAutoMapper(typeof(LmsMappings));
 
 //Seed
 app.SeedDataAsync().GetAwaiter().GetResult();

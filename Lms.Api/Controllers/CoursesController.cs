@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Lms.Data.Data;
 using Lms.Core.Entities;
+using AutoMapper;
 
 namespace Lms.Api.Controllers
 {
@@ -11,9 +12,12 @@ namespace Lms.Api.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly LmsApiContext _context;
-        public CoursesController(LmsApiContext context)
+        private readonly IMapper mapper;
+
+        public CoursesController(LmsApiContext context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: api/Courses
