@@ -29,7 +29,6 @@ namespace Lms.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
-            //var course = await _context.Course.FindAsync(id);
             var course =await _context.Course.Include(c => c.Modules)
                 .FirstOrDefaultAsync(c=>c.Id==id);
             if (course == null)
