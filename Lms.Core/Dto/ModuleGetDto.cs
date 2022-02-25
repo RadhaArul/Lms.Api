@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lms.Core.Dto
 {
-    public class ModuleDto
+    public class ModuleGetDto
     {
         public int Id { get; set; }
         public string Title { get; set; }

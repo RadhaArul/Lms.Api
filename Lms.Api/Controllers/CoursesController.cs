@@ -29,7 +29,7 @@ namespace Lms.Api.Controllers
 
             // var courses = _context.Course.Include(c => c.Modules);
             
-            var courses = mapper.ProjectTo<CourseDto>(_context.Course);
+            var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
             return Ok(courses);
         }
 
@@ -39,7 +39,7 @@ namespace Lms.Api.Controllers
         {
             //var course =await _context.Course.Include(c => c.Modules)
             //    .FirstOrDefaultAsync(c=>c.Id==id);
-            var course = mapper.ProjectTo<CourseDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
+            var course = mapper.ProjectTo<CourseGetDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
             if (course == null)
             {
                 return NotFound();
@@ -51,14 +51,17 @@ namespace Lms.Api.Controllers
         // PUT: api/Courses/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCourse(int id, Course course)
+        public async Task<IActionResult> PutCourse(int id, CoursePutDto course)
         {
-            if (id != course.Id)
+
+            
+            var courseobj = mapper.Map<Course>(course);
+            if (id != courseobj.Id)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(course).State = EntityState.Modified;
+            _context.Entry(courseobj).State = EntityState.Modified;
 
             try
             {
@@ -82,12 +85,13 @@ namespace Lms.Api.Controllers
         // POST: api/Courses
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Course>> PostCourse(Course course)
+        public async Task<ActionResult<Course>> PostCourse(CoursePostDto course)
         {
-            _context.Course.Add(course);
+            var courseobj=mapper.Map<Course>(course);
+            _context.Course.Add(courseobj);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCourse", new { id = course.Id }, course);
+            return CreatedAtAction("GetCourse", new { id = course.Id }, courseobj);
         }
 
         // DELETE: api/Courses/5

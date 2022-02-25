@@ -13,7 +13,7 @@ namespace Lms.Data.Data.MapperProfile
     {
         public LmsMappings()
         {
-            CreateMap<Course, CourseDto>()
+            CreateMap<Course, CourseGetDto>()
                 .ForMember(
                 dest => dest.EndDate,
                 opt => opt.MapFrom(src => src.StartDate.AddMonths(3)))
@@ -21,10 +21,15 @@ namespace Lms.Data.Data.MapperProfile
                 .ForMember(
                 dest=>dest.Modules,
                 opt => opt.MapFrom(src =>src.Modules));
-            CreateMap<Module, ModuleDto>()
+
+            CreateMap<CoursePutDto, Course>();
+            CreateMap<CoursePostDto, Course>();
+            
+            CreateMap<Module, ModuleGetDto>()
                 .ForMember(
                 dest => dest.EndDate,
                 opt => opt.MapFrom(src => src.StartDate.AddMonths(1)));
+            CreateMap<ModulePostPutDto, Module>();
 
         }
     }

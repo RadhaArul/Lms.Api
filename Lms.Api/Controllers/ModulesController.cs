@@ -30,7 +30,7 @@ namespace Lms.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Module>>> GetModule()
         {
-            var modules = mapper.ProjectTo<ModuleDto>(_context.Module);
+            var modules = mapper.ProjectTo<ModuleGetDto>(_context.Module);
             return Ok(modules);
         }
 
@@ -39,7 +39,7 @@ namespace Lms.Api.Controllers
         public async Task<ActionResult<Module>> GetModule(int id)
         {
             //var @module = await _context.Module.FindAsync(id);
-            var module = mapper.ProjectTo<ModuleDto>
+            var module = mapper.ProjectTo<ModuleGetDto>
                 (_context.Module).FirstOrDefaultAsync(m=>m.Id==id);
 
             if (module == null)
