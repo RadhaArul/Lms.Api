@@ -39,6 +39,9 @@ namespace Lms.Api.Controllers
         {
             //var course =await _context.Course.Include(c => c.Modules)
             //    .FirstOrDefaultAsync(c=>c.Id==id);
+            if(id==null)
+                return BadRequest();
+
             var course = mapper.ProjectTo<CourseGetDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
             if (course == null)
             {
@@ -53,8 +56,9 @@ namespace Lms.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCourse(int id, CoursePutDto course)
         {
+            if (id == null)
+                return BadRequest();
 
-            
             var courseobj = mapper.Map<Course>(course);
             if (id != courseobj.Id)
             {
@@ -75,7 +79,7 @@ namespace Lms.Api.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500);
                 }
             }
 
@@ -87,11 +91,27 @@ namespace Lms.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(CoursePostDto course)
         {
-            var courseobj=mapper.Map<Course>(course);
-            _context.Course.Add(courseobj);
-            await _context.SaveChangesAsync();
+            if (course == null)
+            {
+                return NotFound();
+            }
 
-            return CreatedAtAction("GetCourse", new { id = course.Id }, courseobj);
+            var courseobj=mapper.Map<Course>(course);
+
+            try
+            {
+                _context.Course.Add(courseobj);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetCourse", new { id = course.Id }, courseobj);
+            }
+            catch 
+            {
+                return StatusCode(500);
+            }
+
+
+            
         }
 
         // DELETE: api/Courses/5

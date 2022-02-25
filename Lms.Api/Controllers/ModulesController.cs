@@ -77,7 +77,7 @@ namespace Lms.Api.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500);
                 }
             }
 
@@ -90,10 +90,15 @@ namespace Lms.Api.Controllers
         public async Task<ActionResult<Module>> PostModule(ModulePostPutDto module)
         {
             var moduleobj=mapper.Map<Module>(module);
+            try { 
             _context.Module.Add(moduleobj);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetModule", new { id = moduleobj.Id }, moduleobj);
+            }
+            catch {
+                return StatusCode(500);
+            }
         }
 
         // DELETE: api/Modules/5
