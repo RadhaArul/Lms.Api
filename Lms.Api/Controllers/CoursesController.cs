@@ -6,6 +6,7 @@ using Lms.Core.Entities;
 using AutoMapper;
 using Lms.Core.Dto;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Lms.Api.Controllers
 {
@@ -24,13 +25,20 @@ namespace Lms.Api.Controllers
 
         // GET: api/Courses
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
+        public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]char response)
         {
-
             // var courses = _context.Course.Include(c => c.Modules);
+            if ( response == 'Y' || response == 'y')
+            {
+                var courses = mapper.ProjectTo<CourseModuleGetDto>(_context.Course);
+                return Ok(courses);
+            }
+            else
+            {
+                var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
+                return Ok(courses);
+            }
             
-            var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
-            return Ok(courses);
         }
 
         // GET: api/Courses/5
@@ -42,7 +50,7 @@ namespace Lms.Api.Controllers
             if(id==null)
                 return BadRequest();
 
-            var course = mapper.ProjectTo<CourseGetDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
+            var course = mapper.ProjectTo<CourseModuleGetDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
             if (course == null)
             {
                 return NotFound();
@@ -58,6 +66,9 @@ namespace Lms.Api.Controllers
         {
             if (id == null)
                 return BadRequest();
+
+            if (!CourseExists(id))
+                return NotFound();
 
             var courseobj = mapper.Map<Course>(course);
             if (id != courseobj.Id)
@@ -85,6 +96,16 @@ namespace Lms.Api.Controllers
 
             return NoContent();
         }
+        // PartialPUT: api/Courses/5
+        //[HttpPatch("{id}")]
+        //public ActionResult PartialPutCourse(int id, JsonPatchDocument<CoursePutDto> patchcourse)
+        //{
+        //    if(!CourseExists(id))
+        //    return NotFound();
+
+
+        //}
+
 
         // POST: api/Courses
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
