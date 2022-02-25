@@ -39,28 +39,31 @@ namespace Lms.Api.Controllers
         public async Task<ActionResult<Module>> GetModule(int id)
         {
             //var @module = await _context.Module.FindAsync(id);
-            var module = mapper.ProjectTo<ModuleGetDto>
-                (_context.Module).FirstOrDefaultAsync(m=>m.Id==id);
+            if (id == null)
+                return NotFound();
 
-            if (module == null)
+            var moduleobj = mapper.ProjectTo<ModuleGetDto>(_context.Module).FirstOrDefault(c => c.Id == id);
+
+            if (moduleobj == null)
             {
                 return NotFound();
             }
 
-            return Ok(module);
+            return Ok(moduleobj);
         }
 
         // PUT: api/Modules/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutModule(int id, Module @module)
+        public async Task<IActionResult> PutModule(int id, ModulePostPutDto module)
         {
-            if (id != @module.Id)
+            var moduleobj = mapper.Map<Module>(module);
+            if (id != moduleobj.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(@module).State = EntityState.Modified;
+            _context.Entry(moduleobj).State = EntityState.Modified;
 
             try
             {
@@ -84,12 +87,13 @@ namespace Lms.Api.Controllers
         // POST: api/Modules
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Module>> PostModule(Module @module)
+        public async Task<ActionResult<Module>> PostModule(ModulePostPutDto module)
         {
-            _context.Module.Add(@module);
+            var moduleobj=mapper.Map<Module>(module);
+            _context.Module.Add(moduleobj);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetModule", new { id = @module.Id }, @module);
+            return CreatedAtAction("GetModule", new { id = moduleobj.Id }, moduleobj);
         }
 
         // DELETE: api/Modules/5
