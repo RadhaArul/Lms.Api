@@ -35,7 +35,6 @@ namespace Lms.Data.Data.MapperProfile
                 opt => opt.MapFrom(src => src.StartDate.AddMonths(1)));
             CreateMap<ModulePostPutDto, Module>();
 
-            CreateMap<Course, CoursePatchDto>().ReverseMap();
 
         }
     }
