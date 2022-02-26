@@ -10,6 +10,7 @@ using Lms.Data.Data;
 using Lms.Core.Entities;
 using AutoMapper;
 using Lms.Core.Dto;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Lms.Api.Controllers
 {
@@ -83,6 +84,19 @@ namespace Lms.Api.Controllers
             }
 
             return NoContent();
+        }
+
+        // PartialPUT: api/Modules/5
+        [HttpPatch("{moduleId}")]
+        public async Task<IActionResult> PartialUpdateModule(int moduleId, JsonPatchDocument<Module> patchmodule)
+        {
+            var moduleobj = await _context.Module.FindAsync(moduleId);
+
+            // var course = mapper.Map<CoursePatchDto>(courseobj);
+            patchmodule.ApplyTo(moduleobj);
+            await _context.SaveChangesAsync();
+            return StatusCode(200);
+
         }
 
         // POST: api/Modules
