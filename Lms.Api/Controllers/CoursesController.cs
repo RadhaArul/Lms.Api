@@ -25,20 +25,53 @@ namespace Lms.Api.Controllers
 
         // GET: api/Courses
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]char response='n')
+        // Sorting ba Asc,Desc
+        public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]string response="n", [FromQuery(Name ="Sorting By Title enter A for asc /D for desc")]string sort="a")
         {
             // var courses = _context.Course.Include(c => c.Modules);
-            if ( response == 'Y' || response == 'y')
+            if ( response.ToUpper() == "Y")
             {
-               var  courses = mapper.ProjectTo<CourseModuleGetDto>(_context.Course);
-                return Ok( courses);
+                 var courses = mapper.ProjectTo<CourseModuleGetDto>(_context.Course);
+                switch(sort.ToUpper())
+                {
+                    case "A":
+                        {
+                            courses=courses.OrderBy(x => x.Title);
+                            break;
+                        }
+                        case "D":
+                        {
+                            courses = courses.OrderByDescending(x => x.Title);
+                            break ;
+                        }
+                    default:
+                        break;
+
+                }
+                return Ok(courses);
             }
             else
             { 
-                var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
+                 var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
+                switch (sort.ToUpper())
+                {
+                    case "A":
+                        {
+                            courses = courses.OrderBy(x => x.Title);
+                            break;
+                        }
+                    case "D":
+                        {
+                            courses = courses.OrderByDescending(x => x.Title);
+                            break;
+                        }
+                    default:
+                        break;
+
+                }
                 return Ok(courses);
             }
-
+            
         }
 
         // GET: api/Courses/5

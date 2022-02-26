@@ -29,9 +29,14 @@ namespace Lms.Api.Controllers
 
         // GET: api/Modules
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Module>>> GetAllModule()
+        //Sorting by Asc , Desc
+        public async Task<ActionResult<IEnumerable<Module>>> GetModule([FromQuery(Name = "Sorting By Title enter A for asc /D for desc")] string sort = "a")
         {
             var modules = mapper.ProjectTo<ModuleGetDto>(_context.Module);
+            if (sort.ToUpper() == "A")
+                modules = modules.OrderBy(x => x.Title);
+             else
+                modules=modules.OrderByDescending(x=>x.Title);
             return Ok(modules);
         }
 
