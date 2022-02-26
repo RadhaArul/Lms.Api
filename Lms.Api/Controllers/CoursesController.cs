@@ -25,20 +25,20 @@ namespace Lms.Api.Controllers
 
         // GET: api/Courses
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]char response)
+        public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]char response='n')
         {
             // var courses = _context.Course.Include(c => c.Modules);
             if ( response == 'Y' || response == 'y')
             {
-                var courses = mapper.ProjectTo<CourseModuleGetDto>(_context.Course);
-                return Ok(courses);
+               var  courses = mapper.ProjectTo<CourseModuleGetDto>(_context.Course);
+                return Ok( courses);
             }
             else
-            {
+            { 
                 var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
                 return Ok(courses);
             }
-            
+
         }
 
         // GET: api/Courses/5
@@ -47,8 +47,7 @@ namespace Lms.Api.Controllers
         {
             //var course =await _context.Course.Include(c => c.Modules)
             //    .FirstOrDefaultAsync(c=>c.Id==id);
-            if(id==null)
-                return BadRequest();
+           
 
             var course = mapper.ProjectTo<CourseModuleGetDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
             if (course == null)
@@ -64,13 +63,14 @@ namespace Lms.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCourse(int id, CoursePutDto course)
         {
-            if (id == null)
-                return BadRequest();
+            
 
             if (!CourseExists(id))
                 return NotFound();
 
             var courseobj = mapper.Map<Course>(course);
+            
+         
             if (id != courseobj.Id)
             {
                 return NotFound();
@@ -97,14 +97,17 @@ namespace Lms.Api.Controllers
             return NoContent();
         }
         // PartialPUT: api/Courses/5
-        //[HttpPatch("{id}")]
-        //public ActionResult PartialPutCourse(int id, JsonPatchDocument<CoursePutDto> patchcourse)
-        //{
-        //    if(!CourseExists(id))
-        //    return NotFound();
+        [HttpPatch("{courseId}")]
+        public async Task<IActionResult> PartialUpdateCourse(int courseId, JsonPatchDocument<Course> patchcourse)
+        {
+            var courseobj =await _context.Course.FindAsync(courseId);
+            
+           // var course = mapper.Map<CoursePatchDto>(courseobj);
+            patchcourse.ApplyTo(courseobj);
+            await _context.SaveChangesAsync();
+            return StatusCode(200);
 
-
-        //}
+        }
 
 
         // POST: api/Courses

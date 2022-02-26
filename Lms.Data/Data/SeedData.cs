@@ -64,7 +64,7 @@ namespace Lms.Data.Data
                 {
                     var moduleobj = new Module();
                     moduleobj.Title = faker.Company.CatchPhrase();
-                    moduleobj.StartDate = courseobj.StartDate.AddMonths(random.Next(4));
+                    moduleobj.StartDate = courseobj.StartDate.AddMonths(random.Next(2));
                     //moduleobj.CourseId = course.Id;
                     modules.Add(moduleobj);
                 }

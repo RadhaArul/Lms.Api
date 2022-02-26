@@ -28,21 +28,22 @@ namespace Lms.Api.Controllers
 
         // GET: api/Modules
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Module>>> GetModule()
+        public async Task<ActionResult<IEnumerable<Module>>> GetAllModule()
         {
             var modules = mapper.ProjectTo<ModuleGetDto>(_context.Module);
             return Ok(modules);
         }
 
         // GET: api/Modules/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Module>> GetModule(int id)
+        [HttpGet("{title}")]
+        public async Task<ActionResult<IEnumerable<Module>>> GetAllModule(string title)
         {
             //var @module = await _context.Module.FindAsync(id);
-            if (id == null)
+            if (title == null)
                 return NotFound();
 
-            var moduleobj = mapper.ProjectTo<ModuleGetDto>(_context.Module).FirstOrDefault(c => c.Id == id);
+            var moduleobj = mapper.ProjectTo<ModuleGetDto>(_context.Module)
+                .Where(c => c.Title == title);
 
             if (moduleobj == null)
             {

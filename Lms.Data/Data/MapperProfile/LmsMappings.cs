@@ -22,15 +22,20 @@ namespace Lms.Data.Data.MapperProfile
                 dest=>dest.Modules,
                 opt => opt.MapFrom(src =>src.Modules));
 
-            CreateMap<CoursePutDto, Course>();
+            CreateMap<CoursePutDto, Course>().ReverseMap();
             CreateMap<CoursePostDto, Course>();
-            CreateMap<Course, CourseGetDto>();
+            CreateMap<Course, CourseGetDto>()
+                .ForMember(
+                dest => dest.EndDate,
+                opt => opt.MapFrom(src => src.StartDate.AddMonths(3)));
             
             CreateMap<Module, ModuleGetDto>()
                 .ForMember(
                 dest => dest.EndDate,
                 opt => opt.MapFrom(src => src.StartDate.AddMonths(1)));
             CreateMap<ModulePostPutDto, Module>();
+
+            CreateMap<Course, CoursePatchDto>().ReverseMap();
 
         }
     }

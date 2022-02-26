@@ -11,7 +11,7 @@ namespace Lms.Core.Dto
     {
         public int Id { get; set; }
         [Required]
-        [MaxLength(20, ErrorMessage = "Length of the Title can't be more than 20")]
+        [MaxLength(30, ErrorMessage = "Length of the Title can't be more than 30")]
         public string Title { get; set; }
         public DateTime StartDate { get; set; }
         public int CourseId { get; set; }

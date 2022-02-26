@@ -5,15 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lms.Core.Entities
+namespace Lms.Core.Dto
 {
-    public class Module
+    public class CoursePatchDto
     {
-        public int Id { get; set; }
         [Required]
-        [MaxLength(30, ErrorMessage = "Length of the Title can't be more than 30")]
+        [MaxLength(20, ErrorMessage = "Length of the Title can't be more than 20")]
         public string Title { get; set; }
         public DateTime StartDate { get; set; }
-        public int CourseId { get; set; }
     }
 }
