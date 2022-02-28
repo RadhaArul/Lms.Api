@@ -25,7 +25,7 @@ namespace Lms.Api.Controllers
 
         // GET: api/Courses
         [HttpGet]
-        // Sorting ba Asc,Desc
+        // Filtering and Sorting 
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]string response="n", [FromQuery(Name ="Sorting By Title enter A for asc /D for desc")]string sort="a")
         {
             // var courses = _context.Course.Include(c => c.Modules);
@@ -135,7 +135,6 @@ namespace Lms.Api.Controllers
         {
             var courseobj =await _context.Course.FindAsync(courseId);
             
-           // var course = mapper.Map<CoursePatchDto>(courseobj);
             patchcourse.ApplyTo(courseobj);
             await _context.SaveChangesAsync();
             return StatusCode(200);

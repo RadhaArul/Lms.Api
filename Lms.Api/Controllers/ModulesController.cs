@@ -42,6 +42,7 @@ namespace Lms.Api.Controllers
 
         // GET: api/Modules/5
         [HttpGet("{title}")]
+        //Filter by Title
         public async Task<ActionResult<IEnumerable<Module>>> GetAllModule(string title)
         {
             //var @module = await _context.Module.FindAsync(id);
@@ -97,7 +98,6 @@ namespace Lms.Api.Controllers
         {
             var moduleobj = await _context.Module.FindAsync(moduleId);
 
-            // var course = mapper.Map<CoursePatchDto>(courseobj);
             patchmodule.ApplyTo(moduleobj);
             await _context.SaveChangesAsync();
             return StatusCode(200);
