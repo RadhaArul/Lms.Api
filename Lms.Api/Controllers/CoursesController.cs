@@ -26,7 +26,9 @@ namespace Lms.Api.Controllers
         // GET: api/Courses
         [HttpGet]
         // Filtering and Sorting 
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourse([FromQuery(Name ="Do you want Course with Module Y/N")]string response="n", [FromQuery(Name ="Sorting By Title enter A for asc /D for desc")]string sort="a")
+        public async Task<ActionResult<IEnumerable<Course>>>
+            GetCourse([FromQuery(Name ="Do_you_want_Course_with_Module_Y/N")]string response="N", 
+            [FromQuery(Name ="Sorting_By_Title_enter_A_for_asc / D_for_desc")]string sort="A")
         {
             // var courses = _context.Course.Include(c => c.Modules);
             if ( response.ToUpper() == "Y")

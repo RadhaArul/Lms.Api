@@ -11,6 +11,8 @@ using Lms.Core.Entities;
 using AutoMapper;
 using Lms.Core.Dto;
 using Microsoft.AspNetCore.JsonPatch;
+using Lms.Api.Services;
+using System.Text.Json;
 
 namespace Lms.Api.Controllers
 {
@@ -20,6 +22,7 @@ namespace Lms.Api.Controllers
     {
         private readonly LmsApiContext _context;
         private readonly IMapper mapper;
+        const int MaxPageSize = 8;
 
         public ModulesController(LmsApiContext context, IMapper mapper)
         {
@@ -29,14 +32,29 @@ namespace Lms.Api.Controllers
 
         // GET: api/Modules
         [HttpGet]
-        //Sorting by Asc , Desc
-        public async Task<ActionResult<IEnumerable<Module>>> GetModule([FromQuery(Name = "Sorting By Title enter A for asc /D for desc")] string sort = "a")
+        //Sorting by Asc , Desc , Pagination
+
+        public async Task<ActionResult<(IEnumerable<Module>, PaginationMetaData)>> 
+            GetModule([FromQuery(Name = "Sorting_Enter_A_for_asc / D_for_desc")]
+            string sort = "a",int PageNumber=1, int PageSize=4)
         {
+            if (PageSize>MaxPageSize)
+                PageSize = MaxPageSize;
+
             var modules = mapper.ProjectTo<ModuleGetDto>(_context.Module);
             if (sort.ToUpper() == "A")
                 modules = modules.OrderBy(x => x.Title);
              else
                 modules=modules.OrderByDescending(x=>x.Title);
+
+            var totalItemCount = modules.Count();
+            modules =modules.Skip(PageSize*(PageNumber-1)).Take(PageSize);
+
+            
+            var paginationMetadata = new PaginationMetaData(totalItemCount,PageSize,PageNumber);
+
+            Response.Headers.Add("Pagination", JsonSerializer.Serialize(paginationMetadata));
+            
             return Ok(modules);
         }
 
