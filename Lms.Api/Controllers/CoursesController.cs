@@ -7,6 +7,7 @@ using AutoMapper;
 using Lms.Core.Dto;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.JsonPatch;
+using Lms.Core.Repositories;
 
 namespace Lms.Api.Controllers
 {
@@ -14,83 +15,48 @@ namespace Lms.Api.Controllers
     [ApiController]
     public class CoursesController : ControllerBase
     {
-        private readonly LmsApiContext _context;
         private readonly IMapper mapper;
+        private readonly IUnitOfWork uow;
 
-        public CoursesController(LmsApiContext context, IMapper mapper)
+        public CoursesController(IMapper mapper, IUnitOfWork unitofwork)
         {
-            _context = context;
             this.mapper = mapper;
+            this.uow = unitofwork;
         }
 
         // GET: api/Courses
         [HttpGet]
         // Filtering and Sorting 
         public async Task<ActionResult<IEnumerable<Course>>>
-            GetCourse([FromQuery(Name ="Do_you_want_Course_with_Module_Y/N")]string response="N", 
-            [FromQuery(Name ="Sorting_By_Title_enter_A_for_asc / D_for_desc")]string sort="A")
+            GetCourse([FromQuery(Name ="Course_with_Module_Y/N")]string response="N", 
+            [FromQuery(Name ="Title_ByAsc_A / D_for_desc")]string sort="A")
         {
-            // var courses = _context.Course.Include(c => c.Modules);
-            if ( response.ToUpper() == "Y")
+            if (response.ToUpper() == "N")
             {
-                 var courses = mapper.ProjectTo<CourseModuleGetDto>(_context.Course);
-                switch(sort.ToUpper())
-                {
-                    case "A":
-                        {
-                            courses=courses.OrderBy(x => x.Title);
-                            break;
-                        }
-                        case "D":
-                        {
-                            courses = courses.OrderByDescending(x => x.Title);
-                            break ;
-                        }
-                    default:
-                        break;
-
-                }
-                return Ok(courses);
+                var courses = uow.LmsRepo.GetAllCourses(response, sort);
+                return Ok( mapper.Map<IEnumerable<CourseGetDto>>(courses));
             }
             else
-            { 
-                 var courses = mapper.ProjectTo<CourseGetDto>(_context.Course);
-                switch (sort.ToUpper())
-                {
-                    case "A":
-                        {
-                            courses = courses.OrderBy(x => x.Title);
-                            break;
-                        }
-                    case "D":
-                        {
-                            courses = courses.OrderByDescending(x => x.Title);
-                            break;
-                        }
-                    default:
-                        break;
-
-                }
-                return Ok(courses);
+            {
+                var courses = uow.LmsRepo.GetAllCourses(response, sort);
+                return Ok(mapper.Map<IEnumerable<CourseModuleGetDto>>(courses));
             }
-            
+
         }
 
         // GET: api/Courses/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Course>> GetCourse(int id)
+        public async Task<ActionResult<CourseModuleGetDto>> GetCourse(int id)
         {
-            //var course =await _context.Course.Include(c => c.Modules)
-            //    .FirstOrDefaultAsync(c=>c.Id==id);
            
-
-            var course = mapper.ProjectTo<CourseModuleGetDto>(_context.Course).FirstOrDefault(c=>c.Id==id);
-            if (course == null)
+            var coursebyid = uow.LmsRepo.GetCourseById(id);
+           
+            if (coursebyid == null)
             {
                 return NotFound();
             }
 
-            return Ok(course);
+            return Ok(mapper.Map<CourseModuleGetDto>(coursebyid));
         }
 
         // PUT: api/Courses/5
@@ -100,7 +66,7 @@ namespace Lms.Api.Controllers
         {
             
 
-            if (!CourseExists(id))
+            if (!uow.LmsRepo.CourseExists(id))
                 return NotFound();
 
             var courseobj = mapper.Map<Course>(course);
@@ -110,16 +76,16 @@ namespace Lms.Api.Controllers
             {
                 return NotFound();
             }
-
-            _context.Entry(courseobj).State = EntityState.Modified;
+            uow.LmsRepo.UpdateCourse(courseobj);
+           
 
             try
             {
-                await _context.SaveChangesAsync();
+                await uow.CompleteAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CourseExists(id))
+                if (!uow.LmsRepo.CourseExists(id))
                 {
                     return NotFound();
                 }
@@ -133,13 +99,12 @@ namespace Lms.Api.Controllers
         }
         // PartialPUT: api/Courses/5
         [HttpPatch("{courseId}")]
-        public async Task<IActionResult> PartialUpdateCourse(int courseId, JsonPatchDocument<Course> patchcourse)
+        public async Task<ActionResult<Course>> PartialUpdateCourse(int courseId, JsonPatchDocument<Course> patchcourse)
         {
-            var courseobj =await _context.Course.FindAsync(courseId);
-            
+            var courseobj = uow.LmsRepo.PartialUpdateCourse(courseId) ;
             patchcourse.ApplyTo(courseobj);
-            await _context.SaveChangesAsync();
-            return StatusCode(200);
+            await uow.CompleteAsync();
+            return NoContent();
 
         }
 
@@ -158,8 +123,9 @@ namespace Lms.Api.Controllers
 
             try
             {
-                _context.Course.Add(courseobj);
-                await _context.SaveChangesAsync();
+                
+                uow.LmsRepo.AddCourse(courseobj);
+                await uow.CompleteAsync();
 
                 return CreatedAtAction("GetCourse", new { id = course.Id }, courseobj);
             }
@@ -167,30 +133,17 @@ namespace Lms.Api.Controllers
             {
                 return StatusCode(500);
             }
-
-
-            
         }
 
         // DELETE: api/Courses/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
-            var course = await _context.Course.FindAsync(id);
-            if (course == null)
-            {
-                return NotFound();
-            }
-
-            _context.Course.Remove(course);
-            await _context.SaveChangesAsync();
-
+            uow.LmsRepo.DeleteCourse(id);
+            uow.CompleteAsync();
             return NoContent();
         }
 
-        private bool CourseExists(int id)
-        {
-            return _context.Course.Any(e => e.Id == id);
-        }
+        
     }
 }

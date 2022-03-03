@@ -11,8 +11,9 @@ using Lms.Core.Entities;
 using AutoMapper;
 using Lms.Core.Dto;
 using Microsoft.AspNetCore.JsonPatch;
-using Lms.Api.Services;
+
 using System.Text.Json;
+using Lms.Core.Repositories;
 
 namespace Lms.Api.Controllers
 {
@@ -20,13 +21,13 @@ namespace Lms.Api.Controllers
     [ApiController]
     public class ModulesController : ControllerBase
     {
-        private readonly LmsApiContext _context;
+        private readonly IUnitOfWork uow;
         private readonly IMapper mapper;
         const int MaxPageSize = 8;
 
-        public ModulesController(LmsApiContext context, IMapper mapper)
+        public ModulesController(IUnitOfWork unitofwork, IMapper mapper)
         {
-            _context = context;
+            this.uow = unitofwork;
             this.mapper = mapper;
         }
 
@@ -35,27 +36,20 @@ namespace Lms.Api.Controllers
         //Sorting by Asc , Desc , Pagination
 
         public async Task<ActionResult<(IEnumerable<Module>, PaginationMetaData)>> 
-            GetModule([FromQuery(Name = "Sorting_Enter_A_for_asc / D_for_desc")]
+            GetModule([FromQuery(Name = "Sorting_A_for_asc / D_for_desc")]
             string sort = "a",int PageNumber=1, int PageSize=4)
         {
             if (PageSize>MaxPageSize)
                 PageSize = MaxPageSize;
 
-            var modules = mapper.ProjectTo<ModuleGetDto>(_context.Module);
-            if (sort.ToUpper() == "A")
-                modules = modules.OrderBy(x => x.Title);
-             else
-                modules=modules.OrderByDescending(x=>x.Title);
+            (var modules,int totalItemCount) = uow.LmsRepo.GetAllModules(sort, PageNumber, PageSize);
 
-            var totalItemCount = modules.Count();
-            modules =modules.Skip(PageSize*(PageNumber-1)).Take(PageSize);
+            var paginationMetadata = new PaginationMetaData(totalItemCount, PageSize, PageNumber);
 
-            
-            var paginationMetadata = new PaginationMetaData(totalItemCount,PageSize,PageNumber);
 
             Response.Headers.Add("Pagination", JsonSerializer.Serialize(paginationMetadata));
             
-            return Ok(modules);
+            return Ok(mapper.Map<IEnumerable<ModuleGetDto>>(modules));
         }
 
         // GET: api/Modules/5
@@ -67,15 +61,15 @@ namespace Lms.Api.Controllers
             if (title == null)
                 return NotFound();
 
-            var moduleobj = mapper.ProjectTo<ModuleGetDto>(_context.Module)
-                .Where(c => c.Title == title);
+            var moduleobj = uow.LmsRepo.GetAllModules(title);
+                
 
             if (moduleobj == null)
             {
                 return NotFound();
             }
 
-            return Ok(moduleobj);
+            return Ok(mapper.Map<IEnumerable<ModuleGetDto>>(moduleobj));
         }
 
         // PUT: api/Modules/5
@@ -89,15 +83,15 @@ namespace Lms.Api.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(moduleobj).State = EntityState.Modified;
+           uow.LmsRepo.UpdateModule(moduleobj);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await uow.CompleteAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ModuleExists(id))
+                if (!uow.LmsRepo.ModuleExists(id))
                 {
                     return NotFound();
                 }
@@ -114,10 +108,10 @@ namespace Lms.Api.Controllers
         [HttpPatch("{moduleId}")]
         public async Task<IActionResult> PartialUpdateModule(int moduleId, JsonPatchDocument<Module> patchmodule)
         {
-            var moduleobj = await _context.Module.FindAsync(moduleId);
+            var moduleobj = uow.LmsRepo.PartialUpdateModule(moduleId);
 
             patchmodule.ApplyTo(moduleobj);
-            await _context.SaveChangesAsync();
+            await uow.CompleteAsync();
             return StatusCode(200);
 
         }
@@ -128,9 +122,9 @@ namespace Lms.Api.Controllers
         public async Task<ActionResult<Module>> PostModule(ModulePostPutDto module)
         {
             var moduleobj=mapper.Map<Module>(module);
-            try { 
-            _context.Module.Add(moduleobj);
-            await _context.SaveChangesAsync();
+            try {
+                uow.LmsRepo.AddModule(moduleobj);
+                await uow.CompleteAsync();
 
             return CreatedAtAction("GetModule", new { id = moduleobj.Id }, moduleobj);
             }
@@ -143,21 +137,15 @@ namespace Lms.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteModule(int id)
         {
-            var @module = await _context.Module.FindAsync(id);
-            if (@module == null)
-            {
-                return NotFound();
-            }
+            uow.LmsRepo.DeleteModule(id);
+            
 
-            _context.Module.Remove(@module);
-            await _context.SaveChangesAsync();
+            
+            await uow.CompleteAsync();
 
             return NoContent();
         }
 
-        private bool ModuleExists(int id)
-        {
-            return _context.Module.Any(e => e.Id == id);
-        }
+       
     }
 }
