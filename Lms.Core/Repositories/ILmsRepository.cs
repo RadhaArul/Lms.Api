@@ -12,19 +12,19 @@ namespace Lms.Core.Repositories
 {
     public interface ILmsRepository
     {
-        IEnumerable<Course> GetAllCourses(string response, string sort);
-        Course GetCourseById(int id);
-        void UpdateCourse(Course course);
-        void AddCourse(Course course);  
-        void DeleteCourse(int id);
-        Course PartialUpdateCourse(int id);
-        bool CourseExists(int id);
-        (IEnumerable<Module>,int) GetAllModules(string sort, int PageNumber, int PageSize);
-        IEnumerable<Module> GetAllModules(string title);
-        void UpdateModule(Module module);
-        Module PartialUpdateModule(int id);
-        void AddModule(Module module);
-        void DeleteModule(int id);
-        bool ModuleExists(int id);
+        Task<IEnumerable<Course>> GetAllCourses(string response, string sort);
+        Task<Course> GetCourseById(int id);
+        Task UpdateCourse(Course course);
+        Task AddCourse(Course course);  
+        Task DeleteCourse(int id);
+        Task<Course> PartialUpdateCourse(int id);
+        Task<bool> CourseExists(int id);
+        Task<(IEnumerable<Module>,int)> GetAllModules(string sort, int PageNumber, int PageSize);
+        Task<IEnumerable<Module>> GetAllModules(string title);
+        Task UpdateModule(Module module);
+        Task<Module> PartialUpdateModule(int id);
+        Task AddModule(Module module);
+        Task DeleteModule(int id);
+        Task<bool> ModuleExists(int id);
     }
 }

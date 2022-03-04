@@ -42,7 +42,7 @@ namespace Lms.Api.Controllers
             if (PageSize>MaxPageSize)
                 PageSize = MaxPageSize;
 
-            (var modules,int totalItemCount) = uow.LmsRepo.GetAllModules(sort, PageNumber, PageSize);
+            (var modules,int totalItemCount) = await uow.LmsRepo.GetAllModules(sort, PageNumber, PageSize);
 
             var paginationMetadata = new PaginationMetaData(totalItemCount, PageSize, PageNumber);
 
@@ -61,7 +61,7 @@ namespace Lms.Api.Controllers
             if (title == null)
                 return NotFound();
 
-            var moduleobj = uow.LmsRepo.GetAllModules(title);
+            var moduleobj = await uow.LmsRepo.GetAllModules(title);
                 
 
             if (moduleobj == null)
@@ -83,7 +83,7 @@ namespace Lms.Api.Controllers
                 return BadRequest();
             }
 
-           uow.LmsRepo.UpdateModule(moduleobj);
+           await uow.LmsRepo.UpdateModule(moduleobj);
 
             try
             {
@@ -91,7 +91,7 @@ namespace Lms.Api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!uow.LmsRepo.ModuleExists(id))
+                if (!await uow.LmsRepo.ModuleExists(id))
                 {
                     return NotFound();
                 }
@@ -110,7 +110,7 @@ namespace Lms.Api.Controllers
         {
             var moduleobj = uow.LmsRepo.PartialUpdateModule(moduleId);
 
-            patchmodule.ApplyTo(moduleobj);
+            patchmodule.ApplyTo(await moduleobj);
             await uow.CompleteAsync();
             return StatusCode(200);
 
@@ -123,7 +123,7 @@ namespace Lms.Api.Controllers
         {
             var moduleobj=mapper.Map<Module>(module);
             try {
-                uow.LmsRepo.AddModule(moduleobj);
+                await uow.LmsRepo.AddModule(moduleobj);
                 await uow.CompleteAsync();
 
             return CreatedAtAction("GetModule", new { id = moduleobj.Id }, moduleobj);
@@ -137,7 +137,7 @@ namespace Lms.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteModule(int id)
         {
-            uow.LmsRepo.DeleteModule(id);
+            await uow.LmsRepo.DeleteModule(id);
             
 
             

@@ -33,12 +33,12 @@ namespace Lms.Api.Controllers
         {
             if (response.ToUpper() == "N")
             {
-                var courses = uow.LmsRepo.GetAllCourses(response, sort);
+                var courses = await uow.LmsRepo.GetAllCourses(response, sort);
                 return Ok( mapper.Map<IEnumerable<CourseGetDto>>(courses));
             }
             else
             {
-                var courses = uow.LmsRepo.GetAllCourses(response, sort);
+                var courses = await uow.LmsRepo.GetAllCourses(response, sort);
                 return Ok(mapper.Map<IEnumerable<CourseModuleGetDto>>(courses));
             }
 
@@ -49,7 +49,7 @@ namespace Lms.Api.Controllers
         public async Task<ActionResult<CourseModuleGetDto>> GetCourse(int id)
         {
            
-            var coursebyid = uow.LmsRepo.GetCourseById(id);
+            var coursebyid = await uow.LmsRepo.GetCourseById(id);
            
             if (coursebyid == null)
             {
@@ -66,7 +66,7 @@ namespace Lms.Api.Controllers
         {
             
 
-            if (!uow.LmsRepo.CourseExists(id))
+            if (!await uow.LmsRepo.CourseExists(id))
                 return NotFound();
 
             var courseobj = mapper.Map<Course>(course);
@@ -76,7 +76,7 @@ namespace Lms.Api.Controllers
             {
                 return NotFound();
             }
-            uow.LmsRepo.UpdateCourse(courseobj);
+            await uow.LmsRepo.UpdateCourse(courseobj);
            
 
             try
@@ -85,7 +85,7 @@ namespace Lms.Api.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!uow.LmsRepo.CourseExists(id))
+                if (!await uow.LmsRepo.CourseExists(id))
                 {
                     return NotFound();
                 }
@@ -101,8 +101,8 @@ namespace Lms.Api.Controllers
         [HttpPatch("{courseId}")]
         public async Task<ActionResult<Course>> PartialUpdateCourse(int courseId, JsonPatchDocument<Course> patchcourse)
         {
-            var courseobj = uow.LmsRepo.PartialUpdateCourse(courseId) ;
-            patchcourse.ApplyTo(courseobj);
+            var courseobj =  uow.LmsRepo.PartialUpdateCourse(courseId) ;
+            patchcourse.ApplyTo(await courseobj);
             await uow.CompleteAsync();
             return NoContent();
 
@@ -124,7 +124,7 @@ namespace Lms.Api.Controllers
             try
             {
                 
-                uow.LmsRepo.AddCourse(courseobj);
+                await uow.LmsRepo.AddCourse(courseobj);
                 await uow.CompleteAsync();
 
                 return CreatedAtAction("GetCourse", new { id = course.Id }, courseobj);
@@ -139,8 +139,8 @@ namespace Lms.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
-            uow.LmsRepo.DeleteCourse(id);
-            uow.CompleteAsync();
+            await uow.LmsRepo.DeleteCourse(id);
+            await uow.CompleteAsync();
             return NoContent();
         }
 
